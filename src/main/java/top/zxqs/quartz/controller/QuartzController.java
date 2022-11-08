@@ -77,4 +77,15 @@ public class QuartzController {
 
         return row;
     }
+
+    /**
+     * 根据id 查询任务
+     * @param jobId
+     * @return
+     */
+    @GetMapping("selectJobById/{jobId}")
+    public SysJob selectJobById(@PathVariable("jobId") Long jobId){
+        SysJob sysJob = quartzService.selectJobById(jobId);
+        return sysJob;
+    }
 }
