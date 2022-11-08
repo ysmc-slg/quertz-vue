@@ -2,6 +2,7 @@ package top.zxqs.quartz.utils;
 
 
 import org.quartz.*;
+import top.zxqs.quartz.common.SpringUtils;
 import top.zxqs.quartz.constant.ScheduleConstants;
 import top.zxqs.quartz.domain.SysJob;
 
@@ -97,18 +98,20 @@ public class ScheduleUtils {
     }
 
     /**
-     * 检查包名是否为白名单配置
+     * 检查包名是否为白名单配置,包名是否包含 top.zxqs
      *
      * @param invokeTarget 目标字符串
      * @return 结果
      */
-//    public static boolean whiteList(String invokeTarget) {
-//        String packageName = StringUtils.substringBefore(invokeTarget, "(");
-//        int count = StringUtils.countMatches(packageName, ".");
-//        if (count > 1) {
-//            return StringUtils.containsAnyIgnoreCase(invokeTarget, Constants.JOB_WHITELIST_STR);
-//        }
-//        Object obj = SpringUtils.getBean(StringUtils.split(invokeTarget, ".")[0]);
-//        return StringUtils.containsAnyIgnoreCase(obj.getClass().getPackage().getName(), Constants.JOB_WHITELIST_STR);
-//    }
+    public static boolean whiteList(String invokeTarget) {
+        String packageName = StringUtils.substringBefore(invokeTarget, "(");
+        int count = StringUtils.countMatches(packageName, ".");
+        // 大于 1 表示，invokeTarget 为 Bean 名调用
+        if (count > 1) {
+            return StringUtils.containsAnyIgnoreCase(invokeTarget, "top.zxqs");
+        }
+        // 全类名调用
+        Object obj = SpringUtils.getBean(StringUtils.split(invokeTarget, ".")[0]);
+        return StringUtils.containsAnyIgnoreCase(obj.getClass().getPackage().getName(), "top.zxqs");
+    }
 }

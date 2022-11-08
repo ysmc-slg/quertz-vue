@@ -11,4 +11,9 @@ import java.util.List;
 public interface QuartzMapper {
 
     List<SysJob> selectJobAll();
+    int insertJob(SysJob sysJob);
+
+    SysJob selectJobById(Long jobId);
+
+    int updateJob(SysJob sysJob);
 }

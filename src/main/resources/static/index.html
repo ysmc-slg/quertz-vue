@@ -56,18 +56,22 @@
                 <el-tag>{{scope.row.cronExpression}}</el-tag>
             </template>
         </el-table-column>
+
         <el-table-column
                 prop="status"
                 label="状态">
             <template slot-scope="scope">
                 <el-switch
                     v-model="scope.row.status"
-                    active-color="#13ce66">
+                    active-color="#13ce66"
+                    active-value="1"
+                    inactive-value="0"
+                    @change='handleStatusChange(scope.row)'>
                 </el-switch>
             </template>
         </el-table-column>
-        <el-table-column
-                label="操作">
+
+        <el-table-column label="操作">
             <template slot-scope="scope">
                 <el-button type="primary" icon="el-icon-edit" size="small" circle></el-button>
                 <el-button type="danger" icon="el-icon-delete" size="small" circle></el-button>
@@ -82,6 +86,18 @@
                 <el-col :span="12">
                     <el-form-item label="任务名称" prop="jobName">
                         <el-input v-model="form.jobName" placeholder="请输入任务名称" />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="任务分组" prop="jobGroup">
+                        <el-select v-model="form.jobGroup" placeholder="请选择任务分组">
+                            <el-option
+                                    v-for="item in options"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                 </el-col>
                 <el-col :span="24">
@@ -120,6 +136,7 @@
                         </el-radio-group>
                     </el-form-item>
                 </el-col>
+
                 <el-col :span="24">
                     <el-form-item label="错误策略" prop="misfirePolicy">
                         <el-radio-group v-model="form.misfirePolicy" size="small">
@@ -134,10 +151,10 @@
                 </el-col>
             </el-row>
         </el-form>
-<!--        <div slot="footer" class="dialog-footer">-->
-<!--            <el-button type="primary" @click="submitForm">确 定</el-button>-->
-<!--            <el-button @click="cancel">取 消</el-button>-->
-<!--        </div>-->
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="submitForm">确 定</el-button>
+            <el-button @click="cancel">取 消</el-button>
+        </div>
     </el-dialog>
 
 <!--    <el-dialog title="Cron表达式生成器" :visible.sync="openCron" append-to-body destroy-on-close class="scrollbar">-->
@@ -182,7 +199,14 @@
                 cronExpression: [
                     { required: true, message: "cron执行表达式不能为空", trigger: "blur" }
                 ]
-            }
+            },
+            options: [{
+                value: '1',
+                label: '默认'
+            }, {
+                value: '2',
+                label: '系统'
+            }]
         },
         mounted(){
            this.initJobs()
@@ -207,6 +231,56 @@
             crontabFill(value) {
                 this.form.cronExpression = value;
             },
+            // 新增按钮的请求
+            submitForm(){
+                this.$refs["form"].validate((valid) => {
+                    axios.post('/quartz/addJob',this.form).then((res) =>{
+                        alert(res)
+                    })
+                })
+            },
+            // 单选按钮改变的方法
+            handleStatusChange(row){
+                let text = row.status === "1" ? "启用" : "停用";
+                this.$confirm('确认要"' + text + '""' + row.jobName + '"任务吗？','提示',{
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消'
+                }).then(() => {
+                    this.changeJobStatus(row.jobId, row.status)
+                    this.$message({
+                        message: text + "成功",
+                        type: 'success'
+                    });
+
+
+                }).catch(function() {
+                    // console.log(row.status)
+                    row.status = row.status === "1" ? "0" : "1";
+                });
+            },
+            // 修改的点击单选框执行的请求
+            changeJobStatus(jobId, status){
+                axios.post('/quartz/changeStatus',{
+                    jobId,
+                    status
+                }).then((res) =>{
+
+                })
+            },
+            // 关闭弹框
+            cancel(){
+                this.form = {
+                                jobId: undefined,
+                                jobName: undefined,
+                                jobGroup: undefined,
+                                invokeTarget: undefined,
+                                cronExpression: undefined,
+                                misfirePolicy: 1,
+                                concurrent: 1,
+                                status: "0"
+                            }
+                this.open = false
+            }
         }
     })
 </script>

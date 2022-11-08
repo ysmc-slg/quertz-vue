@@ -22,4 +22,14 @@ public class JobTask {
     public void ryMultipleParams(String s, Boolean b, Long l, Double d, Integer i) {
         System.out.println(String.format("%s-%b-%d-%f-%d",s,b,l,d,i));
     }
+
+    public void test() {
+
+        log.info("我执行了");
+    }
+
+    public void test1(String msg) {
+
+        log.info(msg);
+    }
 }
