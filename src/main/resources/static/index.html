@@ -242,9 +242,42 @@
             // 新增按钮的请求
             submitForm(){
                 this.$refs["form"].validate((valid) => {
-                    axios.post('/quartz/addJob',this.form).then((res) =>{
-                        alert(res)
-                    })
+                    if(valid){
+                        if(this.form.jobId != undefined){
+                            // 修改任务
+                            axios.put('/quartz/edit',this.form).then(res => {
+                                this.open = false;
+                                this.initJobs();
+
+                                var dataArray = res.data;
+                                if(dataArray[0] === true){
+                                    this.$message({
+                                        message: '修改成功',
+                                        type: 'success'
+                                    });
+                                } else {
+                                    array = dataArray.join("");
+                                    this.$message({
+                                        // 将array作为HTML运行
+                                        dangerouslyUseHTMLString:true,
+                                        message: array,
+                                        type: 'error'
+                                    })
+                                }
+                            })
+                        } else {
+                            // 添加任务
+                            axios.post('/quartz/addJob',this.form).then((res) =>{
+                                this.open = false;
+                                this.initJobs();
+                                this.$message({
+                                    message: '添加成功',
+                                    type: 'success'
+                                });
+                            })
+                        }
+
+                    }
                 })
             },
             // 单选按钮改变的方法
@@ -262,7 +295,6 @@
 
 
                 }).catch(function() {
-                    // console.log(row.status)
                     row.status = row.status === "1" ? "0" : "1";
                 });
             },

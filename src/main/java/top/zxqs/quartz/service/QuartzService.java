@@ -1,5 +1,6 @@
 package top.zxqs.quartz.service;
 
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,5 +117,38 @@ public class QuartzService {
      */
     public SysJob selectJobById(Long jobId) {
         return quartzMapper.selectJobById(jobId);
+    }
+
+    /**
+     * 修改任务
+     * @param sysJob
+     * @return
+     */
+    public boolean updateJob(SysJob sysJob) throws Exception {
+        SysJob properties = selectJobById(sysJob.getJobId());
+        int row = quartzMapper.updateJob(sysJob);
+        if(row > 0){
+
+            updateSchedulerJob(sysJob, properties.getJobGroup());
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 更新任务
+     *
+     * @param sysJob      任务对象
+     * @param jobGroup 任务组名
+     */
+    public void updateSchedulerJob(SysJob sysJob,String jobGroup) throws Exception {
+        Long jobId = sysJob.getJobId();
+        // 判断是否存在
+        JobKey jobKey = ScheduleUtils.getJobKey(jobId, jobGroup);
+        if (scheduler.checkExists(jobKey)) {
+            // 防止创建时存在数据问题 先移除，然后在执行创建操作
+            scheduler.deleteJob(jobKey);
+        }
+        ScheduleUtils.createScheduleJob(scheduler, sysJob);
     }
 }

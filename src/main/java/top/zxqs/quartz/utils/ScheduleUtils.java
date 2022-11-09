@@ -106,11 +106,11 @@ public class ScheduleUtils {
     public static boolean whiteList(String invokeTarget) {
         String packageName = StringUtils.substringBefore(invokeTarget, "(");
         int count = StringUtils.countMatches(packageName, ".");
-        // 大于 1 表示，invokeTarget 为 Bean 名调用
+        // 大于 1 表示，是全类名
         if (count > 1) {
             return StringUtils.containsAnyIgnoreCase(invokeTarget, "top.zxqs");
         }
-        // 全类名调用
+        // 方法调用，获取bean名得到对应的 全类名进行比较
         Object obj = SpringUtils.getBean(StringUtils.split(invokeTarget, ".")[0]);
         return StringUtils.containsAnyIgnoreCase(obj.getClass().getPackage().getName(), "top.zxqs");
     }
